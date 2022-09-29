@@ -1,3 +1,12 @@
+/*! KenLM model bindings
+
+    This is really early work and it might crash at any error.
+    1. Instantiate a new model
+    2. Begin a context
+    3. Feed words, carrying state between calls
+    4. Send end of sentence token
+
+!*/
 use std::ffi::CString;
 
 use crate::{Dict, LMStateRef};
@@ -31,23 +40,25 @@ impl KenLMState {
 }
 
 /// A wrapper of a KenLM Model.
-struct Model(*mut ctclib_kenlm_sys::lm_base_Model);
+pub struct Model(*mut ctclib_kenlm_sys::lm_base_Model);
 
 impl Model {
-    fn new<T: AsRef<str>>(path: T) -> Self {
+    /// Instantiate a new KenLM Model from a binary/arpa model file.
+    pub fn new<T: AsRef<str>>(path: T) -> Self {
         let x = CString::new(path.as_ref()).unwrap();
         let model = unsafe { ctclib_kenlm_sys::lm_ngram_LoadVirtualWithDefaultConfig(x.as_ptr()) };
         Self(model)
     }
 
-    fn vocab(&self) -> Vocabulary {
+    /// Get the base vocabulary of the model
+    pub fn vocab(&self) -> Vocabulary {
         Vocabulary(
             unsafe { ctclib_kenlm_sys::lm_base_Model_BaseVocabulary(self.0) },
             self,
         )
     }
 
-    fn begin_context(&self) -> KenLMState {
+    pub fn begin_context(&self) -> KenLMState {
         let mut state = KenLMState::new();
         state.with_mut_ptr(|ptr| unsafe {
             ctclib_kenlm_sys::lm_base_Model_BeginSentenceWrite(self.0, ptr as *mut _)
@@ -55,7 +66,7 @@ impl Model {
         state
     }
 
-    fn base_score(&self, state: &KenLMState, token: KenLMWordIndex) -> (KenLMState, f32) {
+    pub fn base_score(&self, state: &KenLMState, token: KenLMWordIndex) -> (KenLMState, f32) {
         state.with_ptr(|state_ptr| {
             let mut outstate = KenLMState::new();
             let score = outstate.with_mut_ptr(|out| unsafe {
@@ -80,14 +91,14 @@ impl Drop for Model {
 }
 
 /// A wrapper of a reference to KenLM Vocabulary
-struct Vocabulary<'a>(*const ctclib_kenlm_sys::lm_base_Vocabulary, &'a Model);
+pub struct Vocabulary<'a>(*const ctclib_kenlm_sys::lm_base_Vocabulary, &'a Model);
 
 impl<'a> Vocabulary<'a> {
-    fn end_sentence(&self) -> KenLMWordIndex {
+    pub fn end_sentence(&self) -> KenLMWordIndex {
         unsafe { ctclib_kenlm_sys::lm_base_Vocabulary_EndSentence(self.0) }
     }
 
-    fn index(&self, x: &str) -> KenLMWordIndex {
+    pub fn index(&self, x: &str) -> KenLMWordIndex {
         unsafe {
             ctclib_kenlm_sys::lm_base_Vocabulary_Index(
                 self.0,
@@ -143,6 +154,32 @@ impl KenLM {
             idx_to_kenlm_idx,
             n_vocab: dict.len(),
         }
+    }
+
+    pub fn perplexity(&mut self, sentence: &str) -> f32 {
+        let nb_words = sentence.split_whitespace().count() as f32 + 1f32; // account for </s>
+
+        10f32.powf(-self.sentence_score(sentence) / nb_words)
+    }
+
+    pub fn sentence_score(&mut self, sentence: &str) -> f32 {
+        let tokens: Vec<&str> = sentence.split_whitespace().collect();
+        let token_ids: Vec<_> = tokens
+            .iter()
+            .map(|tok| self.model.vocab().index(tok))
+            .collect();
+        let mut total = 0f32;
+
+        let mut state = self.model.begin_context();
+        for token_id in token_ids {
+            let (new_state, score) = self.model.base_score(&state, token_id);
+            total += score;
+            state = new_state;
+        }
+        let (_, score) = self
+            .model
+            .base_score(&state, self.model.vocab().end_sentence());
+        total + score
     }
 }
 
