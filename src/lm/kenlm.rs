@@ -1,11 +1,11 @@
 /*! KenLM model bindings
-
-    This is really early work and it might crash at any error.
-    1. Instantiate a new model
-    2. Begin a context
-    3. Feed words, carrying state between calls
-    4. Send end of sentence token
-
+*
+*    This is really early work and it might crash at any error.
+*    1. Instantiate a new model
+*    2. Begin a context
+*    3. Feed words, carrying state between calls
+*    4. Send end of sentence token
+*
 !*/
 use std::ffi::CString;
 
