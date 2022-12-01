@@ -7,7 +7,7 @@
 *    4. Send end of sentence token
 *
 !*/
-use std::ffi::CString;
+use std::{ffi::CString, thread};
 
 use crate::{Dict, LMStateRef};
 
@@ -41,6 +41,9 @@ impl KenLMState {
 
 /// A wrapper of a KenLM Model.
 pub struct Model(*mut ctclib_kenlm_sys::lm_base_Model);
+
+unsafe impl Sync for Model {}
+unsafe impl Send for Model {}
 
 impl Model {
     /// Instantiate a new KenLM Model from a binary/arpa model file.
@@ -156,13 +159,13 @@ impl KenLM {
         }
     }
 
-    pub fn perplexity(&mut self, sentence: &str) -> f32 {
+    pub fn perplexity(&self, sentence: &str) -> f32 {
         let nb_words = sentence.split_whitespace().count() as f32 + 1f32; // account for </s>
 
         10f32.powf(-self.sentence_score(sentence) / nb_words)
     }
 
-    pub fn sentence_score(&mut self, sentence: &str) -> f32 {
+    pub fn sentence_score(&self, sentence: &str) -> f32 {
         let tokens: Vec<&str> = sentence.split_whitespace().collect();
         let token_ids: Vec<_> = tokens
             .iter()
