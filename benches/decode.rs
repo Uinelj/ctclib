@@ -46,6 +46,8 @@ fn criterion_benchmark(c: &mut Criterion) {
 
 #[cfg(feature = "kenlm")]
 fn criterion_benchmark_kenlm(c: &mut Criterion) {
+    use std::path::Path;
+
     use ctclib::{Dict, KenLM};
 
     let (steps, n_vocab, data) = load_logits();
@@ -56,7 +58,7 @@ fn criterion_benchmark_kenlm(c: &mut Criterion) {
             lm_weight: 0.5,
             ..decoder_options()
         },
-        KenLM::new("data/overfit.arpa", &dict),
+        KenLM::new(Path::new("data/overfit.arpa"), &dict).unwrap(),
     );
     c.bench_function("KenLM", |b| {
         b.iter(|| decoder.decode(black_box(&data), black_box(steps), n_vocab, blank))

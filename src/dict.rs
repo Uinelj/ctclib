@@ -19,7 +19,7 @@ pub enum DictError {
     Load(#[from] std::io::Error),
 }
 
-#[derive(Clone, Debug, PartialEq, Default)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Dict {
     entry2idx: HashMap<String, i32>,
     idx2entry: HashMap<i32, String>,
