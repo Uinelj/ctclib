@@ -7,7 +7,7 @@
 *    4. Send end of sentence token
 *
 !*/
-use std::{ffi::CString, thread};
+use std::{ffi::CString, fmt::Debug, path::Path};
 
 use crate::{Dict, LMStateRef};
 
@@ -46,11 +46,18 @@ unsafe impl Sync for Model {}
 unsafe impl Send for Model {}
 
 impl Model {
-    /// Instantiate a new KenLM Model from a binary/arpa model file.
-    pub fn new<T: AsRef<str>>(path: T) -> Self {
-        let x = CString::new(path.as_ref()).unwrap();
-        let model = unsafe { ctclib_kenlm_sys::lm_ngram_LoadVirtualWithDefaultConfig(x.as_ptr()) };
-        Self(model)
+    pub fn new(path: &Path) -> std::io::Result<Self> {
+        if path.try_exists()? {
+            let x = CString::new(path.to_str().unwrap()).unwrap();
+            let model =
+                unsafe { ctclib_kenlm_sys::lm_ngram_LoadVirtualWithDefaultConfig(x.as_ptr()) };
+            Ok(Self(model))
+        } else {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                format!("{path:?}"),
+            ))
+        }
     }
 
     /// Get the base vocabulary of the model
@@ -114,7 +121,7 @@ impl<'a> Vocabulary<'a> {
 
 #[test]
 fn load_model_and_get_vocab() {
-    let model = Model::new("data/overfit.arpa");
+    let model = Model::new(Path::new("data/overfit.arpa")).unwrap();
     let vocab = model.vocab();
     assert_eq!(vocab.end_sentence(), 2);
     assert_eq!(vocab.index("M"), 3);
@@ -140,9 +147,9 @@ pub struct KenLM {
 }
 
 impl KenLM {
-    pub fn new<T: AsRef<str>>(path: T, dict: &Dict) -> Self {
+    pub fn new(path: &Path, dict: &Dict) -> std::io::Result<Self> {
         // TODO: convert user vocabulary to KenLM's vocabulary
-        let model = Model::new(path);
+        let model = Model::new(path)?;
         let vocab = model.vocab();
 
         let mut idx_to_kenlm_idx = vec![0; dict.len()];
@@ -152,11 +159,11 @@ impl KenLM {
             idx_to_kenlm_idx[idx as usize] = kenlm_idx;
         }
 
-        Self {
+        Ok(Self {
             model,
             idx_to_kenlm_idx,
             n_vocab: dict.len(),
-        }
+        })
     }
 
     pub fn perplexity(&self, sentence: &str) -> f32 {

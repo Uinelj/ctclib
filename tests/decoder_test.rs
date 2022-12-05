@@ -1,4 +1,4 @@
-use std::io::BufRead;
+use std::{io::BufRead, path::Path};
 
 use ctclib::{
     BeamSearchDecoder, BeamSearchDecoderOptions, Decoder, Dict, GreedyDecoder, KenLM, ZeroLM,
@@ -77,7 +77,7 @@ fn beam_search_decoder_decodes_sequence_with_kenlm() {
             beam_threshold: f32::MAX,
             lm_weight: 0.5,
         },
-        KenLM::new("data/overfit.arpa", &dict),
+        KenLM::new(&Path::new("data/overfit.arpa"), &dict).unwrap(),
     );
     let outputs = decoder.decode(&data, steps, n_vocab, blank);
     let output = &outputs[0];
