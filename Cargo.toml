@@ -1,14 +1,14 @@
 [package]
 edition = "2021"
-name = "ctclib"
-version = "0.1.0"
-authors = ["Naomichi Agata <agatan039@gmail.com>"]
+name = "ctclib-pp"
+version = "0.2.0"
+authors = ["Naomichi Agata <agatan039@gmail.com>", "Julien Abadji <aulien.jbadji@gmail.com>"]
 license = "MIT"
-repository = "https://github.com/agatan/ctclib"
-description = "A collection of utilities related to CTC, with the goal of being fast and highly flexible."
+repository = "https://github.com/Uinelj/ctclib"
+description = "A collection of utilities related to CTC, with the goal of being fast and highly flexible, with perplexity scores for KenLMs models"
 readme = "README.md"
 categories = ["science", "mathematics", "algorithms"]
-keywords = ["ctc", "beam-search"]
+keywords = ["ctc", "beam-search", "KenLM"]
 
 [[bench]]
 harness = false
