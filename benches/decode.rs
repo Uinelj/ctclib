@@ -1,7 +1,7 @@
 use std::io::BufRead;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use ctclib::{BeamSearchDecoder, BeamSearchDecoderOptions, Decoder, GreedyDecoder, ZeroLM};
+use ctclib_pp::{BeamSearchDecoder, BeamSearchDecoderOptions, Decoder, GreedyDecoder, ZeroLM};
 
 #[cfg(feature = "dhat-heap")]
 #[global_allocator]
@@ -48,7 +48,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 fn criterion_benchmark_kenlm(c: &mut Criterion) {
     use std::path::Path;
 
-    use ctclib::{Dict, KenLM};
+    use ctclib_pp::{Dict, KenLM};
 
     let (steps, n_vocab, data) = load_logits();
     let blank = (n_vocab - 1) as i32;

@@ -1,6 +1,6 @@
 use std::{io::BufRead, path::Path};
 
-use ctclib::{
+use ctclib_pp::{
     BeamSearchDecoder, BeamSearchDecoderOptions, Decoder, Dict, GreedyDecoder, KenLM, ZeroLM,
 };
 

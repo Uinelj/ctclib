@@ -1,6 +1,6 @@
 use std::{fs::File, path::Path};
 
-use ctclib::{Dict, KenLM, LM};
+use ctclib_pp::{Dict, KenLM, LM};
 
 #[test]
 fn kenlm_model_works() {

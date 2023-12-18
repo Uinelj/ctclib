@@ -1,5 +1,4 @@
 use std::{
-    borrow::Borrow,
     collections::HashMap,
     fs::File,
     io::{BufRead, BufReader, Read},
@@ -88,7 +87,7 @@ impl Dict {
     }
 
     pub fn index(&self, entry: &str) -> Result<i32, DictError> {
-        match self.entry2idx.get(entry.borrow()) {
+        match self.entry2idx.get(entry) {
             Some(&idx) => Ok(idx),
             None => Err(DictError::MissingEntry(entry.to_owned())),
         }

@@ -2,7 +2,10 @@
 edition = "2021"
 name = "ctclib-pp"
 version = "0.2.0"
-authors = ["Naomichi Agata <agatan039@gmail.com>", "Julien Abadji <aulien.jbadji@gmail.com>"]
+authors = [
+    "Naomichi Agata <agatan039@gmail.com>",
+    "Julien Abadji <aulien.jbadji@gmail.com>",
+]
 license = "MIT"
 repository = "https://github.com/Uinelj/ctclib"
 description = "A collection of utilities related to CTC, with the goal of being fast and highly flexible, with perplexity scores for KenLMs models"
@@ -18,11 +21,11 @@ name = "decode"
 libm = "~0.2"
 pdqselect = "~0.1"
 thiserror = "1.0"
-ordered-float = "2.0"
+ordered-float = "4.2"
 
 [dependencies.dhat]
 optional = true
-version = "0.3.0"
+version = "0.3.2"
 
 [dependencies.ctclib-kenlm-sys]
 optional = true
@@ -30,7 +33,7 @@ path = "ctclib-kenlm-sys"
 version = "0.1"
 
 [dev-dependencies]
-criterion = "0.3.5"
+criterion = "0.5.1"
 
 [features]
 default = ["kenlm"]
