@@ -113,7 +113,7 @@ impl<'a> Vocabulary<'a> {
             ctclib_kenlm_sys::lm_base_Vocabulary_Index(
                 self.0,
                 x.as_ptr() as *const _,
-                x.as_bytes().len() as u64,
+                x.as_bytes().len(),
             )
         }
     }
